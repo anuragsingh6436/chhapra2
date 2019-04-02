@@ -2,14 +2,28 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const passport = require('passport');
+var http=require('http');
+//var express = require('express');
+var app = express();
+// var server = require('http').createServer(app);
+// var server  = app.listen(1337);
+var server = http.createServer(app);
+var io= require('socket.io').listen(server);
+users =[];
+connections = [];
 // Load User model
 const User = require('../models/user');
-
 // Login Page
 router.get('/login', (req, res) => res.render('login'));
 
 // Register Page
 router.get('/register', (req, res) => res.render('register'));
+
+//router.get('/',function(req,res){
+// res.sendFile(__dirname + '/index1.html');
+//});
+//router.get('/index1', (req, res) => res.render('index1'));
+
 
 // Register
 router.post('/register', (req, res) => {
@@ -90,5 +104,10 @@ router.get('/logout', (req, res) => {
   req.flash('success_msg', 'You are logged out');
   res.redirect('/users/login');
 });
+
+
+
+//chat
+
 
 module.exports = router;

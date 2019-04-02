@@ -6,6 +6,9 @@ const flash = require('connect-flash');
 const session = require('express-session');
 
 const app = express();
+var http=require('http');
+var server = http.createServer(app);
+var io= require('socket.io').listen(server);
 
 // Passport Config
 require('./config/passport')(passport);
@@ -22,7 +25,7 @@ let db =mongoose.connection;
 
 db.once('open',function(){
 
-  console.log('connected to mongodb');
+  console.log('connected to mongodb'); 
 
 });
 
@@ -64,10 +67,43 @@ app.use(function(req, res, next) {
   next();
 });
 
+
+//chat
+io.sockets.on('connection',function(socket){
+  connections.push(socket);
+  console.log('Connected %s sockets connected',connections.length);
+
+  socket.on('disconnect',function(data){
+  
+    users.splice(users.indexOf(socket.username),1);
+    updataUsernames();
+     connections.splice(connections.indexOf(socket),1);
+      console.log("disconnected %s sockets connected",connections.length);
+  });
+
+  //send message
+  socket.on('send message',function(data){
+   io.sockets.emit('new message',{msg: data, user:socket.username});
+  });
+
+  //new user
+  socket.on('new user',function(data,callback){
+    //console.log('hhasr1');
+    callback(true);
+    socket.username= data;
+    users.push(socket.username);
+    updataUsernames();
+  });
+  function updataUsernames(){
+    io.sockets.emit('get users',users);
+  }
+ 
+});
+
 // Routes
 app.use('/', require('./routes/index.js'));
 app.use('/users', require('./routes/users.js'));
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, console.log(`Server started on port ${PORT}`));
+server.listen(PORT, console.log(`Server started on port ${PORT}`));

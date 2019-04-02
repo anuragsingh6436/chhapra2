@@ -12,4 +12,24 @@ router.get('/dashboard', ensureAuthenticated, (req, res) =>
   })
 );
 
+
+router.get('/add', (req, res) => {
+	if(req.user){
+	res.render('add');
+}
+
+
+else
+{
+req.flash('error_msg', 'Please log in to view that resource');
+    res.redirect('/users/login');
+}
+
+	
+});
+router.get('/index1', (req, res) => {
+	 //if(req.user){
+	res.render('index1');
+ //}
+});
 module.exports = router;
